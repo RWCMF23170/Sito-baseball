@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <title>Login Admin</title>
+
+  <link rel="stylesheet" href="style.css">
+
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+  <script src="firebase.js"></script>
+
+  <style>
+    body { padding: 20px; text-align: center; }
+    input { padding: 10px; width: 200px; margin-top: 10px; }
+    button { padding: 10px 20px; margin-top: 15px; }
+  </style>
+</head>
+
+<body>
+
+<h1>Accesso Amministratore</h1>
+
+<p>Inserisci il PIN per accedere all'area riservata</p>
+
+<input type="password" id="pin" placeholder="PIN admin"><br>
+<button onclick="login()">Entra</button>
+
+<script>
+  async function login() {
+    const pin = document.getElementById("pin").value;
+    
+    try {
+      // Leggi il PIN da Firestore
+      const doc = await db.collection("settings").doc("admin").get();
+      const savedPin = doc.exists ? doc.data().pin : "1234";
+
+      if (pin === savedPin) {
+        sessionStorage.setItem("admin", "ok");
+        location = "admin.html";
+      } else {
+        alert("PIN errato");
+      }
+    } catch (error) {
+      console.error("Errore durante il login:", error);
+      alert("Errore di connessione. Controlla la configurazione Firebase.");
+    }
+  }
+
+  // Cambia il PIN
+  async function changePinBtn() {
+    const newPin = document.getElementById("newPin").value;
+    const confirmPin = document.getElementById("confirmPin").value;
+
+    if (!newPin || !confirmPin) {
+      return alert("Inserisci il nuovo PIN in entrambi i campi");
+    }
+
+    if (newPin.length < 4) {
+      return alert("Il PIN deve avere almeno 4 caratteri");
+    }
+
+    if (newPin !== confirmPin) {
+      return alert("I PIN non coincidono");
+    }
+
+    try {
+      // Salva il PIN su Firestore
+      await db.collection("settings").doc("admin").set({
+        pin: newPin
+      });
+
+      alert("PIN cambiato con successo! Usa il nuovo PIN al prossimo login.");
+      
+      // Resetta i campi
+      document.getElementById("newPin").value = "";
+      document.getElementById("confirmPin").value = "";
+      
+      // Aggiorna la visualizzazione
+      displayCurrentPin();
+    } catch (error) {
+      console.error("Errore durante il cambio PIN:", error);
+      alert("Errore nel salvataggio. Riprova.");
+    }
+  }
+
+  // Mostra il PIN attuale
+  async function displayCurrentPin() {
+    try {
+      const doc = await db.collection("settings").doc("admin").get();
+      const currentPin = doc.exists ? doc.data().pin : "1234";
+      document.getElementById("currentPin").textContent = "*".repeat(currentPin.length);
+    } catch (error) {
+      console.error("Errore nel caricamento del PIN:", error);
+      document.getElementById("currentPin").textContent = "****";
+    }
+  }
+</script>
+
+</body>
+</html>

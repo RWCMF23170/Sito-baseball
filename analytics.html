@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <title>Analisi Giocatori – Serie C Baseball</title>
+
+  <link rel="stylesheet" href="style.css">
+
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+  <script src="firebase.js"></script>
+
+  <!-- Chart.js per i grafici -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <script src="app.js"></script>
+  <script src="data.js"></script>
+  <script src="stats-descriptions.js"></script>
+
+  <style>
+    body { padding: 20px; }
+    .back-link { margin-bottom: 20px; }
+    .back-link a { color: #0066cc; text-decoration: none; font-weight: bold; }
+    .back-link a:hover { text-decoration: underline; }
+    
+    .container { max-width: 1200px; margin: 0 auto; }
+    
+    .controls {
+      margin-bottom: 30px;
+      padding: 15px;
+      background: #f0f0f0;
+      border-radius: 6px;
+    }
+    
+    .controls select, .controls button {
+      padding: 10px;
+      margin-right: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      font-size: 14px;
+    }
+    
+    .controls button {
+      background: #0066cc;
+      color: white;
+      cursor: pointer;
+      border: none;
+    }
+    
+    .controls button:hover {
+      background: #004c99;
+    }
+    
+    .chart-container {
+      position: relative;
+      height: 400px;
+      margin-bottom: 40px;
+      background: white;
+      padding: 20px;
+      border-radius: 6px;
+      border: 1px solid #ddd;
+    }
+    
+    .chart-title {
+      font-size: 18px;
+      font-weight: bold;
+      margin-bottom: 15px;
+      color: #333;
+    }
+    
+    .stats-summary {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 15px;
+      margin-bottom: 30px;
+    }
+    
+    .stat-card {
+      background: white;
+      padding: 20px;
+      border-radius: 6px;
+      border-left: 4px solid #0066cc;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .stat-card h4 {
+      margin-top: 0;
+      margin-bottom: 10px;
+      color: #0066cc;
+    }
+    
+    .stat-card p {
+      margin: 5px 0;
+      font-size: 14px;
+      color: #666;
+    }
+    
+    .stat-value {
+      font-size: 28px;
+      font-weight: bold;
+      color: #333;
+      margin: 10px 0;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="container">
+  <div class="back-link">
+    <a href="admin.html">← Torna all'Area Amministratore</a>
+  </div>
+
+  <h1>Analisi Andamento Giocatori</h1>
+
+  <div class="controls">
+    <label for="playerSelect">Seleziona Giocatore:</label>
+    <select id="playerSelect">
+      <option value="">-- Carica i giocatori --</option>
+    </select>
+    <button onclick="loadPlayerAnalytics()">Carica Analisi</button>
+  </div>
+
+  <div id="analyticsContent">
+    <p style="text-align: center; color: #999;">Seleziona un giocatore per visualizzare l'analisi</p>
+  </div>
+</div>
+
+<script>
+  // Carica la lista dei giocatori
+  async function loadPlayers() {
+    const players = await getPlayers();
+    const select = document.getElementById("playerSelect");
+    select.innerHTML = '<option value="">-- Seleziona un giocatore --</option>';
+    
+    players.forEach(p => {
+      const option = document.createElement("option");
+      option.value = p.id;
+      option.textContent = `${p.name} (${p.team})`;
+      select.appendChild(option);
+    });
+  }
+
+  // Carica la cronologia delle statistiche
+  async function getPlayerHistory(playerId) {
+    const doc = await db.collection("playerHistory").doc(String(playerId)).get();
+    if (!doc.exists) return [];
+    return doc.data().history || [];
+  }
+
+  // Salva uno snapshot delle statistiche attuali
+  async function savePlayerSnapshot(playerId, stats) {
+    const history = await getPlayerHistory(playerId);
+    const snapshot = {
+      date: new Date().toLocaleDateString('it-IT'),
+      timestamp: new Date().getTime(),
+      batting: { ...stats.batting },
+      pitching: { ...stats.pitching },
+      fielding: { ...stats.fielding }
+    };
+    
+    history.push(snapshot);
+    await db.collection("playerHistory").doc(String(playerId)).set({ history });
+  }
+
+  // Carica e visualizza le analisi
+  async function loadPlayerAnalytics() {
+    const select = document.getElementById("playerSelect");
+    let playerId = select.value;
+    
+    // Se non c'è un valore nel select, controlla se è nell'URL
+    if (!playerId) {
+      const urlParams = new URLSearchParams(location.search);
+      playerId = urlParams.get("id");
+      if (playerId && select.value !== playerId) {
+        select.value = playerId;
+      }
+    }
+    
+    if (!playerId) {
+      alert("Seleziona un giocatore");
+      return;
+    }
+
+    const players = await getPlayers();
+    const player = players.find(p => p.id == playerId);
+    
+    if (!player) return;
+
+    const stats = await getStats(playerId);
+    const history = await getPlayerHistory(playerId);
+
+    // Se non ci sono dati storici, salva lo snapshot attuale
+    if (history.length === 0) {
+      await savePlayerSnapshot(playerId, stats);
+      alert("Primo salvataggio effettuato. Aggiungi altre statistiche per visualizzare l'andamento.");
+      return;
+    }
+
+    // Genera il contenuto dell'analisi
+    generateAnalytics(player, stats, history);
+  }
+
+  function generateAnalytics(player, currentStats, history) {
+    const content = document.getElementById("analyticsContent");
+    
+    let html = `
+      <h2>${player.name} - ${player.team}</h2>
+      
+      <div class="stats-summary">
+        <div class="stat-card">
+          <h4>Media Battuta</h4>
+          <p>Attuale:</p>
+          <div class="stat-value">${currentStats.batting.AVG}</div>
+          <p><small>Cronologia: ${history.length} registrazioni</small></p>
+        </div>
+        <div class="stat-card">
+          <h4>Media Punti Consentiti</h4>
+          <p>Attuale:</p>
+          <div class="stat-value">${currentStats.pitching.ERA}</div>
+        </div>
+        <div class="stat-card">
+          <h4>Percentuale Difesa</h4>
+          <p>Attuale:</p>
+          <div class="stat-value">${currentStats.fielding.FPCT}</div>
+        </div>
+        <div class="stat-card">
+          <h4>Indice di Efficienza</h4>
+          <p>Attuale:</p>
+          <div class="stat-value">${currentStats.pitching.WHIP}</div>
+        </div>
+      </div>
+      
+      <div class="chart-container">
+        <div class="chart-title">Andamento Media Battuta</div>
+        <canvas id="avgChart"></canvas>
+      </div>
+      
+      <div class="chart-container">
+        <div class="chart-title">Andamento Colpi Validi vs Strikeout</div>
+        <canvas id="hitsVsKChart"></canvas>
+      </div>
+      
+      <div class="chart-container">
+        <div class="chart-title">Andamento Fuoricampo</div>
+        <canvas id="hrChart"></canvas>
+      </div>
+      
+      <div class="chart-container">
+        <div class="chart-title">Andamento Corse Segnate</div>
+        <canvas id="runsChart"></canvas>
+      </div>
+      
+      <div class="chart-container">
+        <div class="chart-title">Andamento Media Punti Consentiti (ERA)</div>
+        <canvas id="eraChart"></canvas>
+      </div>
+      
+      <div class="chart-container">
+        <div class="chart-title">Andamento Strike vs Ball</div>
+        <canvas id="strikeVsBallChart"></canvas>
+      </div>
+    `;
+    
+    content.innerHTML = html;
+
+    // Prepara i dati per i grafici
+    const dates = history.map(h => h.date);
+    const avgData = history.map(h => parseFloat(h.batting.AVG));
+    const hitsData = history.map(h => h.batting.H);
+    const ksData = history.map(h => h.batting.SO);
+    const hrData = history.map(h => h.batting.HR);
+    const runsData = history.map(h => h.batting.R);
+    const eraData = history.map(h => parseFloat(h.pitching.ERA));
+    const strikeData = history.map(h => h.pitching.Strikes);
+    const ballData = history.map(h => h.pitching.Balls);
+
+    // Crea i grafici
+    createChart("avgChart", "Andamento Media Battuta", dates, avgData, "#0066cc");
+    createLineChart("hitsVsKChart", "Colpi Validi vs Strikeout", dates, hitsData, ksData);
+    createChart("hrChart", "Andamento Fuoricampo", dates, hrData, "#FF6B6B");
+    createChart("runsChart", "Andamento Corse Segnate", dates, runsData, "#4CAF50");
+    createChart("eraChart", "Andamento ERA", dates, eraData, "#FF9800");
+    createLineChart("strikeVsBallChart", "Strike vs Ball", dates, strikeData, ballData);
+  }
+
+  function createChart(canvasId, title, labels, data, color) {
+    const ctx = document.getElementById(canvasId).getContext("2d");
+    new Chart(ctx, {
+      type: "line",
+      data: {
+        labels: labels,
+        datasets: [{
+          label: title,
+          data: data,
+          borderColor: color,
+          backgroundColor: color + "20",
+          borderWidth: 2,
+          fill: true,
+          tension: 0.4,
+          pointRadius: 5,
+          pointBackgroundColor: color,
+          pointBorderColor: "#fff",
+          pointBorderWidth: 2
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            display: false
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: {
+              font: { size: 12 }
+            }
+          }
+        }
+      }
+    });
+  }
+
+  function createLineChart(canvasId, title, labels, data1, data2) {
+    const ctx = document.getElementById(canvasId).getContext("2d");
+    new Chart(ctx, {
+      type: "line",
+      data: {
+        labels: labels,
+        datasets: [
+          {
+            label: "Colpi Validi",
+            data: data1,
+            borderColor: "#0066cc",
+            backgroundColor: "#0066cc20",
+            borderWidth: 2,
+            tension: 0.4,
+            pointRadius: 5,
+            pointBackgroundColor: "#0066cc"
+          },
+          {
+            label: "Strikeout",
+            data: data2,
+            borderColor: "#FF6B6B",
+            backgroundColor: "#FF6B6B20",
+            borderWidth: 2,
+            tension: 0.4,
+            pointRadius: 5,
+            pointBackgroundColor: "#FF6B6B"
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            display: true,
+            position: "top"
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true
+          }
+        }
+      }
+    });
+  }
+
+  // Carica i giocatori al caricamento della pagina
+  loadPlayers();
+  
+  // Se c'è un ID nella query string, carica automaticamente l'analisi
+  const urlParams = new URLSearchParams(location.search);
+  const playerId = urlParams.get("id");
+  if (playerId) {
+    // Aspetta che i giocatori siano caricati
+    setTimeout(() => {
+      document.getElementById("playerSelect").value = playerId;
+      loadPlayerAnalytics();
+    }, 500);
+  }
+</script>
+
+</body>
+</html>

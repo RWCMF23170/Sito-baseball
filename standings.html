@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <title>Classifica – Serie C Baseball</title>
+
+  <link rel="stylesheet" href="style.css">
+
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+  <script src="firebase.js"></script>
+
+  <style>
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    th, td {
+      padding: 10px;
+      border-bottom: 1px solid #ccc;
+      text-align: center;
+    }
+    th {
+      background: #eee;
+    }
+  </style>
+</head>
+
+<body>
+
+<h1>Classifica Serie C – Girone K</h1>
+
+<table>
+  <thead>
+    <tr>
+      <th>Squadra</th>
+      <th>W</th>
+      <th>L</th>
+      <th>PCT</th>
+    </tr>
+  </thead>
+  <tbody id="standings"></tbody>
+</table>
+
+<script>
+  const TEAMS = ["Bulldogs", "Happy Friends", "Randazzese", "UNIME"];
+
+  async function loadStandings() {
+    const snap = await db.collection("games").get();
+    const games = snap.docs.map(d => d.data());
+
+    // struttura classifica
+    const standings = {
+      "Bulldogs": { W: 0, L: 0 },
+      "Happy Friends": { W: 0, L: 0 },
+      "Randazzese": { W: 0, L: 0 },
+      "UNIME": { W: 0, L: 0 }
+    };
+
+    // calcolo W/L dalle partite
+    for (const g of games) {
+      if (standings[g.winner]) standings[g.winner].W++;
+      if (standings[g.loser]) standings[g.loser].L++;
+    }
+
+    // prepara righe classifica
+    const rows = TEAMS.map(team => {
+      const W = standings[team].W;
+      const L = standings[team].L;
+      const PCT = (W + L > 0) ? (W / (W + L)).toFixed(3) : "0.000";
+      return { team, W, L, PCT };
+    });
+
+    // ordina per percentuale
+    rows.sort((a, b) => b.PCT - a.PCT);
+
+    // stampa tabella
+    document.getElementById("standings").innerHTML =
+      rows.map(r => `
+        <tr>
+          <td>${r.team}</td>
+          <td>${r.W}</td>
+          <td>${r.L}</td>
+          <td>${r.PCT}</td>
+        </tr>
+      `).join("");
+  }
+
+  loadStandings();
+</script>
+
+</body>
+</html>

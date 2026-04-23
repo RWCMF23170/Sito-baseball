@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <title>Team</title>
+
+  <link rel="stylesheet" href="style.css">
+
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+  <script src="firebase.js"></script>
+
+  <script src="app.js"></script>
+  <script src="data.js"></script>
+</head>
+
+<body>
+
+<h1 id="teamName"></h1>
+<div id="players"></div>
+
+<script>
+  async function loadTeam() {
+    const team = new URLSearchParams(location.search).get("team");
+    document.getElementById("teamName").textContent = team;
+
+    const players = await getPlayers();
+    const list = players.filter(p => p.team === team);
+
+    document.getElementById("players").innerHTML =
+      list.map(p => `<a href="player.html?id=${p.id}">${p.name}</a><br>`).join("");
+  }
+
+  loadTeam();
+</script>
+
+</body>
+</html>

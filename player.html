@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <title>Statistiche Giocatore</title>
+
+  <link rel="stylesheet" href="style.css">
+
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+  <script src="firebase.js"></script>
+
+  <script src="app.js"></script>
+  <script src="stats-descriptions.js"></script>
+  <script src="data.js"></script>
+</head>
+
+<body>
+
+<h1 id="playerName"></h1>
+<h2 id="playerTeam"></h2>
+
+<a id="viewGraphsLink" href="#" style="display: inline-block; margin: 15px 0; padding: 10px 20px; background: #0066cc; color: white; text-decoration: none; border-radius: 5px; font-weight: bold;">📊 Visualizza Grafici di Andamento</a>
+
+<div id="stats"></div>
+
+<script>
+  // Funzione per creare un elemento statistica con tooltip
+  function createStatWithTooltip(label, value) {
+    const description = getStatDescription(label);
+    return `
+      <span class="stat-item" onclick="toggleTooltip(event)">
+        ${label}: ${value}
+        <span class="tooltip">${description}</span>
+      </span><br>
+    `;
+  }
+
+  // Funzione per gestire il toggle dei tooltip su mobile
+  function toggleTooltip(event) {
+    event.stopPropagation();
+    const statItem = event.currentTarget;
+    
+    // Rimuovi la classe active da tutti gli altri elementi
+    document.querySelectorAll('.stat-item.active').forEach(el => {
+      if (el !== statItem) {
+        el.classList.remove('active');
+      }
+    });
+    
+    // Toggle la classe active su questo elemento
+    statItem.classList.toggle('active');
+  }
+
+  // Chiudi tooltip quando si clicca altrove
+  document.addEventListener('click', () => {
+    document.querySelectorAll('.stat-item.active').forEach(el => {
+      el.classList.remove('active');
+    });
+  });
+
+  async function loadPlayer() {
+    const id = new URLSearchParams(location.search).get("id");
+    const players = await getPlayers();
+    const p = players.find(x => x.id === id);
+
+    if (!p) return;
+
+    document.getElementById("playerName").textContent = p.name;
+    document.getElementById("playerTeam").textContent = p.team;
+    
+    // Imposta il link ai grafici
+    document.getElementById("viewGraphsLink").href = `analytics.html?id=${id}`;
+
+    let stats = await getStats(id);
+    stats = updateComputedStats(stats);
+
+    document.getElementById("stats").innerHTML = `
+      <h3>Battuta</h3>
+      ${createStatWithTooltip('AVG', stats.batting.AVG)}
+      ${createStatWithTooltip('OBP', stats.batting.OBP)}
+      ${createStatWithTooltip('SLG', stats.batting.SLG)}
+      ${createStatWithTooltip('OPS', stats.batting.OPS)}
+
+      <h3>Lancio</h3>
+      ${createStatWithTooltip('ERA', stats.pitching.ERA)}
+      ${createStatWithTooltip('WHIP', stats.pitching.WHIP)}
+      ${createStatWithTooltip('StrikePCT', stats.pitching.StrikePCT + '%')}
+      ${createStatWithTooltip('BallPCT', stats.pitching.BallPCT + '%')}
+
+      <h3>Difesa</h3>
+      ${createStatWithTooltip('FPCT', stats.fielding.FPCT)}
+    `;
+  }
+
+  loadPlayer();
+</script>
+
+</body>
+</html>

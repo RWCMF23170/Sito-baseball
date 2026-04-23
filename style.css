@@ -1,0 +1,237 @@
+/* ============================================================
+   STILE GENERALE
+   ============================================================ */
+
+body {
+  font-family: Arial, Helvetica, sans-serif;
+  margin: 0;
+  padding: 20px;
+  background: #f7f7f7;
+  color: #222;
+}
+
+h1, h2, h3 {
+  margin-top: 0;
+  font-weight: 600;
+}
+
+a {
+  color: #0066cc;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+/* ============================================================
+   CONTENITORI E SEZIONI
+   ============================================================ */
+
+.section {
+  margin: 10px 0;
+  padding: 10px;
+  background: #fff;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+}
+
+/* ============================================================
+   INPUT E BOTTONI
+   ============================================================ */
+
+input, select {
+  padding: 10px;
+  margin: 5px 0;
+  width: 200px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  background: #fff;
+}
+
+button {
+  padding: 10px 20px;
+  background: #0066cc;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-top: 10px;
+}
+
+button:hover {
+  background: #004c99;
+}
+
+/* ============================================================
+   TABELLE (Classifica, Liste, ecc.)
+   ============================================================ */
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+  background: white;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+th {
+  background: #eaeaea;
+  padding: 12px;
+  font-weight: bold;
+  border-bottom: 2px solid #ccc;
+}
+
+td {
+  padding: 10px;
+  border-bottom: 1px solid #ddd;
+  text-align: center;
+}
+
+tr:hover {
+  background: #f2f2f2;
+}
+
+/* ============================================================
+   MENU ADMIN
+   ============================================================ */
+
+.menu {
+  margin-bottom: 20px;
+}
+
+.menu a {
+  display: inline-block;
+  padding: 10px 20px;
+  margin: 5px;
+  background: #eaeaea;
+  border-radius: 5px;
+  text-decoration: none;
+  color: #222;
+  font-weight: bold;
+}
+
+.menu a:hover {
+  background: #d5d5d5;
+}
+
+/* ============================================================
+   CARDS (Lista partite, dettagli, ecc.)
+   ============================================================ */
+
+.game {
+  padding: 15px;
+  background: white;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+  margin-bottom: 15px;
+}
+
+.winner {
+  font-weight: bold;
+  color: green;
+}
+
+.loser {
+  color: #666;
+}
+
+.box {
+  margin-top: 20px;
+  padding: 15px;
+  background: #fafafa;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+}
+
+/* ============================================================
+   TOOLTIP / POPUP STATISTICHE
+   ============================================================ */
+
+.stat-item {
+  position: relative;
+  display: inline-block;
+  cursor: help;
+  border-bottom: 1px dotted #0066cc;
+  padding: 2px 0;
+  margin: 5px 0;
+}
+
+.stat-item:hover {
+  background-color: #f0f8ff;
+}
+
+/* Contenitore del tooltip */
+.tooltip {
+  visibility: hidden;
+  background-color: #333;
+  color: #fff;
+  text-align: left;
+  border-radius: 6px;
+  padding: 10px 12px;
+  position: absolute;
+  z-index: 1000;
+  bottom: 125%;
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  font-size: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+  opacity: 0;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+  pointer-events: none;
+}
+
+/* Triangolino del tooltip */
+.tooltip::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  margin-left: -5px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: #333 transparent transparent transparent;
+}
+
+/* Tooltip visibile al hover */
+.stat-item:hover .tooltip {
+  visibility: visible;
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Tooltip visibile quando attivo (per mobile) */
+.stat-item.active .tooltip {
+  visibility: visible;
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Su mobile, usa bottom se c'è spazio */
+@media (max-width: 768px) {
+  .tooltip {
+    white-space: normal;
+    max-width: 200px;
+    width: 200px;
+  }
+}
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+
+@media (max-width: 600px) {
+  input, select {
+    width: 100%;
+  }
+
+  button {
+    width: 100%;
+  }
+
+  table {
+    font-size: 14px;
+  }
+}
