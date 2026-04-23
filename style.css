@@ -1,237 +1,579 @@
 /* ============================================================
-   STILE GENERALE
+   IMPORTAZIONI E VARIABILI
    ============================================================ */
 
-body {
-  font-family: Arial, Helvetica, sans-serif;
-  margin: 0;
-  padding: 20px;
-  background: #f7f7f7;
-  color: #222;
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@600;700&display=swap');
+
+:root {
+  --primary: #1e40af;
+  --primary-dark: #1e3a8a;
+  --primary-light: #3b82f6;
+  --accent: #f59e0b;
+  --success: #10b981;
+  --danger: #ef4444;
+  --warning: #f97316;
+  --bg-light: #f9fafb;
+  --bg-main: #ffffff;
+  --text-primary: #111827;
+  --text-secondary: #6b7280;
+  --border: #e5e7eb;
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow: 0 4px 6px rgba(0, 0, 0, 0.07), 0 2px 4px rgba(0, 0, 0, 0.05);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1), 0 4px 6px rgba(0, 0, 0, 0.05);
+  --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-h1, h2, h3 {
-  margin-top: 0;
+/* ============================================================
+   RESET E STILE GENERALE
+   ============================================================ */
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  margin: 0;
+  padding: 0;
+  background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);
+  color: var(--text-primary);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Poppins', sans-serif;
   font-weight: 600;
+  margin: 0;
+  color: var(--text-primary);
+}
+
+h1 {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+}
+
+h2 {
+  font-size: 1.5rem;
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+  color: var(--primary-dark);
+}
+
+h3 {
+  font-size: 1.125rem;
+  margin-top: 1.5rem;
+  margin-bottom: 0.75rem;
+}
+
+p {
+  margin: 0.5rem 0;
+  color: var(--text-secondary);
 }
 
 a {
-  color: #0066cc;
+  color: var(--primary);
   text-decoration: none;
+  transition: var(--transition);
 }
 
 a:hover {
+  color: var(--primary-dark);
   text-decoration: underline;
 }
 
+hr {
+  border: none;
+  height: 1px;
+  background: var(--border);
+  margin: 2rem 0;
+}
+
 /* ============================================================
-   CONTENITORI E SEZIONI
+   LAYOUT PRINCIPALE
+   ============================================================ */
+
+body > h1 {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+  color: white;
+  padding: 2rem;
+  margin: 0 0 2rem 0;
+  border-radius: 12px;
+  box-shadow: var(--shadow-lg);
+  text-align: center;
+  font-size: 2.5rem;
+}
+
+.menu {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin: 2rem;
+  padding: 1.5rem;
+  background: var(--bg-main);
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+}
+
+.menu a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.25rem;
+  background: linear-gradient(135deg, var(--primary-light) 0%, var(--primary) 100%);
+  color: white;
+  border-radius: 8px;
+  font-weight: 500;
+  transition: var(--transition);
+  box-shadow: var(--shadow-sm);
+  border: none;
+  cursor: pointer;
+  font-size: 0.95rem;
+}
+
+.menu a:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow);
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+  text-decoration: none;
+}
+
+/* ============================================================
+   SZIONI E CONTENITORI
    ============================================================ */
 
 .section {
-  margin: 10px 0;
-  padding: 10px;
-  background: #fff;
-  border-radius: 6px;
-  border: 1px solid #ddd;
+  background: var(--bg-main);
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin: 1.5rem;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  transition: var(--transition);
+}
+
+.section:hover {
+  box-shadow: var(--shadow-lg);
+  border-color: var(--primary-light);
 }
 
 /* ============================================================
-   INPUT E BOTTONI
+   INPUT E SELECT
    ============================================================ */
 
-input, select {
-  padding: 10px;
-  margin: 5px 0;
-  width: 200px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  background: #fff;
+input,
+select,
+textarea {
+  padding: 0.75rem 1rem;
+  margin: 0.5rem 0;
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg-light);
+  color: var(--text-primary);
+  font-family: 'Inter', sans-serif;
+  font-size: 0.95rem;
+  transition: var(--transition);
+  width: 100%;
+  max-width: 300px;
 }
 
-button {
-  padding: 10px 20px;
-  background: #0066cc;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  margin-top: 10px;
+input:focus,
+select:focus,
+textarea:focus {
+  outline: none;
+  border-color: var(--primary);
+  background: var(--bg-main);
+  box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.1);
 }
 
-button:hover {
-  background: #004c99;
+input::placeholder {
+  color: var(--text-secondary);
+}
+
+input[type="date"],
+input[type="number"] {
+  max-width: 300px;
 }
 
 /* ============================================================
-   TABELLE (Classifica, Liste, ecc.)
+   BOTTONI
+   ============================================================ */
+
+button {
+  padding: 0.75rem 1.5rem;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 500;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: var(--transition);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-right: 0.5rem;
+  margin-top: 1rem;
+}
+
+button:not([style*="background"]) {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+  color: white;
+  box-shadow: var(--shadow);
+}
+
+button:not([style*="background"]):hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+button:active {
+  transform: translateY(0);
+}
+
+button[style*="4CAF50"],
+button[style*="green"] {
+  background: linear-gradient(135deg, var(--success) 0%, #059669 100%) !important;
+  color: white;
+  box-shadow: var(--shadow);
+}
+
+button[style*="4CAF50"]:hover,
+button[style*="green"]:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+button[style*="f44336"],
+button[style*="red"] {
+  background: linear-gradient(135deg, var(--danger) 0%, #dc2626 100%) !important;
+  color: white;
+  box-shadow: var(--shadow);
+}
+
+button[style*="f44336"]:hover,
+button[style*="red"]:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+/* ============================================================
+   LABEL E FORM
+   ============================================================ */
+
+label {
+  display: block;
+  font-weight: 500;
+  color: var(--text-primary);
+  margin: 1rem 0 0.5rem 0;
+  font-size: 0.95rem;
+}
+
+.input-group {
+  margin: 1rem 0;
+  padding: 1rem;
+  background: var(--bg-light);
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+
+.input-label {
+  display: inline-block;
+  position: relative;
+  cursor: help;
+  color: var(--primary);
+  border-bottom: 2px dotted var(--primary);
+  padding: 2px 0;
+  font-weight: 500;
+  transition: var(--transition);
+}
+
+.input-label:hover {
+  background-color: rgba(30, 64, 175, 0.05);
+  padding: 2px 4px;
+  border-radius: 4px;
+}
+
+.input-label .tooltip {
+  visibility: hidden;
+  background-color: var(--primary-dark);
+  color: white;
+  text-align: left;
+  border-radius: 8px;
+  padding: 0.75rem;
+  position: absolute;
+  z-index: 1000;
+  bottom: 125%;
+  left: 0;
+  white-space: normal;
+  max-width: 250px;
+  font-size: 0.875rem;
+  box-shadow: var(--shadow-lg);
+  opacity: 0;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+  pointer-events: none;
+}
+
+.input-label:hover .tooltip {
+  visibility: visible;
+  opacity: 1;
+}
+
+/* ============================================================
+   TABELLE
    ============================================================ */
 
 table {
   width: 100%;
-  border-collapse: collapse;
-  margin-top: 20px;
-  background: white;
-  border-radius: 6px;
+  border-collapse: separate;
+  border-spacing: 0;
+  margin-top: 1.5rem;
+  background: var(--bg-main);
+  border-radius: 12px;
   overflow: hidden;
+  box-shadow: var(--shadow);
 }
 
 th {
-  background: #eaeaea;
-  padding: 12px;
-  font-weight: bold;
-  border-bottom: 2px solid #ccc;
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+  color: white;
+  padding: 1rem;
+  font-weight: 600;
+  text-align: center;
+  font-size: 0.95rem;
+  border: none;
 }
 
 td {
-  padding: 10px;
-  border-bottom: 1px solid #ddd;
+  padding: 1rem;
+  border-bottom: 1px solid var(--border);
   text-align: center;
+  background: var(--bg-main);
 }
 
 tr:hover {
-  background: #f2f2f2;
+  background: var(--bg-light);
+}
+
+tr:last-child td {
+  border-bottom: none;
 }
 
 /* ============================================================
-   MENU ADMIN
+   CARD E BOX
    ============================================================ */
 
-.menu {
-  margin-bottom: 20px;
+.game,
+.box {
+  padding: 1.5rem;
+  background: var(--bg-main);
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  margin-bottom: 1rem;
+  box-shadow: var(--shadow);
+  transition: var(--transition);
 }
 
-.menu a {
-  display: inline-block;
-  padding: 10px 20px;
-  margin: 5px;
-  background: #eaeaea;
-  border-radius: 5px;
-  text-decoration: none;
-  color: #222;
-  font-weight: bold;
-}
-
-.menu a:hover {
-  background: #d5d5d5;
-}
-
-/* ============================================================
-   CARDS (Lista partite, dettagli, ecc.)
-   ============================================================ */
-
-.game {
-  padding: 15px;
-  background: white;
-  border-radius: 6px;
-  border: 1px solid #ddd;
-  margin-bottom: 15px;
+.game:hover,
+.box:hover {
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-2px);
 }
 
 .winner {
-  font-weight: bold;
-  color: green;
+  font-weight: 700;
+  color: var(--success);
+  background: rgba(16, 185, 129, 0.1);
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  display: inline-block;
 }
 
 .loser {
-  color: #666;
-}
-
-.box {
-  margin-top: 20px;
-  padding: 15px;
-  background: #fafafa;
-  border: 1px solid #ccc;
-  border-radius: 6px;
+  color: var(--text-secondary);
+  opacity: 0.7;
 }
 
 /* ============================================================
-   TOOLTIP / POPUP STATISTICHE
+   STATISTICHE E TOOLTIP
    ============================================================ */
 
 .stat-item {
   position: relative;
   display: inline-block;
   cursor: help;
-  border-bottom: 1px dotted #0066cc;
-  padding: 2px 0;
-  margin: 5px 0;
+  border-bottom: 2px dotted var(--primary);
+  padding: 2px 4px;
+  margin: 0.5rem 0.75rem 0.5rem 0;
+  transition: var(--transition);
+  font-weight: 500;
 }
 
 .stat-item:hover {
-  background-color: #f0f8ff;
+  background-color: rgba(30, 64, 175, 0.05);
+  border-radius: 4px;
 }
 
-/* Contenitore del tooltip */
-.tooltip {
+.stat-item .tooltip {
   visibility: hidden;
-  background-color: #333;
-  color: #fff;
+  background-color: var(--primary-dark);
+  color: white;
   text-align: left;
-  border-radius: 6px;
-  padding: 10px 12px;
+  border-radius: 8px;
+  padding: 0.75rem;
   position: absolute;
   z-index: 1000;
   bottom: 125%;
   left: 50%;
   transform: translateX(-50%);
-  white-space: nowrap;
-  font-size: 12px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+  white-space: normal;
+  max-width: 200px;
+  font-size: 0.875rem;
+  box-shadow: var(--shadow-lg);
   opacity: 0;
   transition: opacity 0.3s ease, visibility 0.3s ease;
   pointer-events: none;
 }
 
-/* Triangolino del tooltip */
-.tooltip::after {
-  content: "";
-  position: absolute;
-  top: 100%;
-  left: 50%;
-  margin-left: -5px;
-  border-width: 5px;
-  border-style: solid;
-  border-color: #333 transparent transparent transparent;
-}
-
-/* Tooltip visibile al hover */
 .stat-item:hover .tooltip {
   visibility: visible;
   opacity: 1;
-  pointer-events: auto;
-}
-
-/* Tooltip visibile quando attivo (per mobile) */
-.stat-item.active .tooltip {
-  visibility: visible;
-  opacity: 1;
-  pointer-events: auto;
-}
-
-/* Su mobile, usa bottom se c'è spazio */
-@media (max-width: 768px) {
-  .tooltip {
-    white-space: normal;
-    max-width: 200px;
-    width: 200px;
-  }
 }
 
 /* ============================================================
-   RESPONSIVE
+   RESPONSIVE DESIGN
    ============================================================ */
 
-@media (max-width: 600px) {
-  input, select {
-    width: 100%;
+@media (max-width: 768px) {
+  body {
+    padding: 0;
   }
 
-  button {
+  body > h1 {
+    margin: 0;
+    border-radius: 0;
+    font-size: 1.75rem;
+    padding: 1.5rem 1rem;
+  }
+
+  .menu {
+    flex-direction: column;
+    gap: 0.5rem;
+    margin: 1rem;
+    padding: 1rem;
+  }
+
+  .menu a {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .section {
+    margin: 1rem;
+    padding: 1rem;
+  }
+
+  input,
+  select,
+  textarea {
+    max-width: 100%;
     width: 100%;
   }
 
   table {
-    font-size: 14px;
+    font-size: 0.85rem;
+  }
+
+  th, td {
+    padding: 0.75rem 0.5rem;
+  }
+
+  h2 {
+    font-size: 1.25rem;
+  }
+
+  h3 {
+    font-size: 1rem;
   }
 }
+
+@media (max-width: 480px) {
+  body > h1 {
+    font-size: 1.5rem;
+    padding: 1rem;
+  }
+
+  .menu {
+    margin: 0.5rem;
+  }
+
+  .section {
+    margin: 0.5rem;
+    padding: 0.75rem;
+  }
+
+  button {
+    width: 100%;
+    margin-right: 0;
+  }
+
+  .input-label .tooltip {
+    max-width: 150px;
+    font-size: 0.8rem;
+  }
+}
+
+/* ============================================================
+   ANIMAZIONI
+   ============================================================ */
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.section {
+  animation: slideIn 0.3s ease-out;
+}
+
+/* ============================================================
+   UTILITY
+   ============================================================ */
+
+.text-center {
+  text-align: center;
+}
+
+.text-muted {
+  color: var(--text-secondary);
+}
+
+.mb-1 { margin-bottom: 0.5rem; }
+.mb-2 { margin-bottom: 1rem; }
+.mb-3 { margin-bottom: 1.5rem; }
+
+.mt-1 { margin-top: 0.5rem; }
+.mt-2 { margin-top: 1rem; }
+.mt-3 { margin-top: 1.5rem; }
+
+.p-1 { padding: 0.5rem; }
+.p-2 { padding: 1rem; }
+.p-3 { padding: 1.5rem; }

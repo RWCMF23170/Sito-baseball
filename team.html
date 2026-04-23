@@ -6,11 +6,6 @@
 
   <link rel="stylesheet" href="style.css">
 
-  <!-- Firebase -->
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
-  <script src="firebase.js"></script>
-
   <script src="app.js"></script>
   <script src="data.js"></script>
 </head>
@@ -21,11 +16,11 @@
 <div id="players"></div>
 
 <script>
-  async function loadTeam() {
+  function loadTeam() {
     const team = new URLSearchParams(location.search).get("team");
     document.getElementById("teamName").textContent = team;
 
-    const players = await getPlayers();
+    const players = getPlayers();
     const list = players.filter(p => p.team === team);
 
     document.getElementById("players").innerHTML =

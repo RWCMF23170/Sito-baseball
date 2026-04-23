@@ -3,30 +3,57 @@
    ============================================================ */
 
 // =========================
-// PLAYERS
+// PLAYERS (localStorage)
 // =========================
 
-async function getPlayers() {
-  const snap = await db.collection("players").get();
-  return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+// Inizializza lista giocatori se non esiste
+if (!localStorage.getItem("players")) {
+  localStorage.setItem("players", JSON.stringify([]));
 }
 
-async function addPlayerToDB(player) {
-  await db.collection("players").doc(String(player.id)).set(player);
+function getPlayers() {
+  try {
+    return JSON.parse(localStorage.getItem("players")) || [];
+  } catch (e) {
+    console.error("Errore nel caricamento giocatori:", e);
+    return [];
+  }
+}
+
+function addPlayerToDB(player) {
+  const players = getPlayers();
+  const index = players.findIndex(p => p.id == player.id);
+  
+  if (index >= 0) {
+    players[index] = player;
+  } else {
+    players.push(player);
+  }
+  
+  localStorage.setItem("players", JSON.stringify(players));
 }
 
 // =========================
-// STATS
+// STATS (localStorage)
 // =========================
 
-async function getStats(id) {
-  const doc = await db.collection("stats").doc(String(id)).get();
-  if (!doc.exists) return defaultStats();
-  return doc.data();
+function getStats(id) {
+  try {
+    const statsKey = "stats_" + String(id);
+    const saved = localStorage.getItem(statsKey);
+    if (saved) {
+      return JSON.parse(saved);
+    }
+    return defaultStats();
+  } catch (e) {
+    console.error("Errore nel caricamento statistiche:", e);
+    return defaultStats();
+  }
 }
 
-async function saveStats(id, stats) {
-  await db.collection("stats").doc(String(id)).set(stats);
+function saveStats(id, stats) {
+  const statsKey = "stats_" + String(id);
+  localStorage.setItem(statsKey, JSON.stringify(stats));
 }
 
 // =========================
@@ -152,6 +179,46 @@ function addMatch(home, away, hs, as) {
   });
 
   saveMatches(matches);
+}
+
+// Elimina una partita
+function removeMatch(id) {
+  let matches = getMatches();
+  matches = matches.filter(m => m.id != id);
+  saveMatches(matches);
+}
+
+// Modifica una partita
+function updateMatch(id, updatedData) {
+  let matches = getMatches();
+  const index = matches.findIndex(m => m.id == id);
+  if (index >= 0) {
+    matches[index] = { ...matches[index], ...updatedData };
+    saveMatches(matches);
+  }
+}
+
+// Alias per compatibilità con admin.html
+function getGames() {
+  return getMatches();
+}
+
+// =========================
+// PLAYER HISTORY (localStorage)
+// =========================
+
+function getPlayerHistory(playerId) {
+  try {
+    const historyKey = "history_" + String(playerId);
+    const saved = localStorage.getItem(historyKey);
+    if (saved) {
+      return JSON.parse(saved);
+    }
+    return [];
+  } catch (e) {
+    console.error("Errore nel caricamento cronologia:", e);
+    return [];
+  }
 }
 
 // Calcolo classifica W-L

@@ -2,91 +2,789 @@
 <html lang="it">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin – Serie C Baseball</title>
 
   <link rel="stylesheet" href="style.css">
 
-  <!-- Firebase -->
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
-  <script src="firebase.js"></script>
-
   <script src="app.js"></script>
   <script src="stats-descriptions.js"></script>
   <script src="data.js"></script>
-
-  <style>
-    body { padding: 20px; }
-    .menu a {
-      display: inline-block;
-      padding: 10px 20px;
-      margin: 5px;
-      background: #eee;
-      border-radius: 5px;
-      text-decoration: none;
-      color: black;
-    }
-    .menu a:hover {
-      background: #ddd;
-    }
-    .input-group {
-      margin-bottom: 15px;
-    }
-    .input-label {
-      display: inline-block;
-      position: relative;
-      cursor: help;
-      color: #0066cc;
-      border-bottom: 1px dotted #0066cc;
-      padding: 2px 0;
-    }
-    .input-label:hover {
-      background-color: #f0f8ff;
-    }
-    .input-label .tooltip {
-      visibility: hidden;
-      background-color: #333;
-      color: #fff;
-      text-align: left;
-      border-radius: 6px;
-      padding: 10px 12px;
-      position: absolute;
-      z-index: 1000;
-      bottom: 125%;
-      left: 0;
-      white-space: normal;
-      max-width: 250px;
-      font-size: 12px;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
-      opacity: 0;
-      transition: opacity 0.3s ease, visibility 0.3s ease;
-      pointer-events: none;
-    }
-    .input-label:hover .tooltip {
-      visibility: visible;
-      opacity: 1;
-    }
-  </style>
 </head>
 
 <body>
 
-<script>
-  if (sessionStorage.getItem("admin") !== "ok") {
-    location = "admin-login.html";
-  }
-</script>
-
-<h1>Area Amministratore</h1>
+<h1>⚾ Area Amministratore</h1>
 
 <div class="menu">
-  <a href="admin.html">Gestione Giocatori</a>
-  <a href="games.html">Inserisci Partita</a>
-  <a href="games-list.html">Lista Partite</a>
-  <a href="standings.html">Classifica</a>
-  <a href="analytics.html">📊 Analisi Giocatori</a>
-  <a href="#" onclick="logout()">Logout</a>
+  <a href="admin.html">👤 Gestione Giocatori</a>
+  <a href="standings.html">📊 Classifica</a>
+  <a href="analytics.html">📈 Analisi Giocatori</a>
 </div>
+
+<div style="max-width: 1200px; margin: 0 auto;">
+  <!-- ==================== IMPOSTAZIONI ====================  -->
+  <div class="section">
+    <h2>⚙️ Impostazioni Amministratore</h2>
+    <div class="input-group">
+      <label>Cambia PIN di Accesso</label>
+      <p style="margin-bottom: 1rem;">PIN Attuale: <strong id="currentPin" style="background: #f0f8ff; padding: 0.25rem 0.5rem; border-radius: 4px;"></strong></p>
+      <input type="password" id="newPin" placeholder="Nuovo PIN" maxlength="6">
+      <input type="password" id="confirmPin" placeholder="Conferma PIN" maxlength="6">
+      <button onclick="changePinBtn()" style="margin-top: 1rem;">Cambia PIN</button>
+    </div>
+  </div>
+
+  <!-- ==================== GESTIONE GIOCATORI ====================  -->
+  <div class="section">
+    <h2>👥 Gestione Giocatori</h2>
+    
+    <h3>📝 Aggiungi Nuovo Giocatore</h3>
+    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; align-items: flex-end;">
+      <div>
+        <label>Nome Giocatore</label>
+        <input id="name" placeholder="Es. Marco Rossi" style="margin: 0;">
+      </div>
+      <div>
+        <label>Squadra</label>
+        <select id="team" style="margin: 0;">
+          <option>Bulldogs</option>
+          <option>Happy Friends</option>
+          <option>Randazzese</option>
+          <option>UNIME</option>
+        </select>
+      </div>
+      <button onclick="addPlayer()" style="margin-top: 0;">➕ Aggiungi Giocatore</button>
+    </div>
+
+    <h3 style="margin-top: 2rem;">✏️ Modifica o Elimina Giocatore</h3>
+    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 1rem; align-items: flex-end;">
+      <div>
+        <label>Seleziona Giocatore</label>
+        <select id="playerList" style="margin: 0;"></select>
+      </div>
+      <div>
+        <label>Nuovo Nome</label>
+        <input id="editPlayerName" placeholder="Nome" style="margin: 0;">
+      </div>
+      <div>
+        <label>Nuova Squadra</label>
+        <select id="editTeam" style="margin: 0;"></select>
+      </div>
+      <div>
+        <button onclick="updatePlayerBtn()" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); margin-top: 0;">✓ Modifica</button>
+        <button onclick="deletePlayerBtn()" style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); margin-top: 0; margin-left: 0.5rem;">✕ Elimina</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== GESTIONE SQUADRE ====================  -->
+  <div class="section">
+    <h2>🏟️ Gestione Squadre</h2>
+    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; align-items: flex-end;">
+      <div>
+        <label>Seleziona Squadra</label>
+        <select id="teamList" style="margin: 0;"></select>
+      </div>
+      <div>
+        <label>Nome Squadra</label>
+        <input id="editTeamName" placeholder="Nome squadra" style="margin: 0;">
+      </div>
+      <div>
+        <button onclick="updateTeamBtn()" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); margin-top: 0;">✓ Modifica</button>
+        <button onclick="deleteTeamBtn()" style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); margin-top: 0; margin-left: 0.5rem;">✕ Elimina</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== GESTIONE PARTITE ====================  -->
+  <div class="section">
+    <h2>🎮 Gestione Partite</h2>
+
+    <h3>➕ Aggiungi Nuova Partita</h3>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; align-items: flex-end;">
+      <div>
+        <label>Data</label>
+        <input type="date" id="addDate" style="margin: 0;">
+      </div>
+      <div>
+        <label>Squadra Casa</label>
+        <select id="addHome" style="margin: 0;"></select>
+      </div>
+      <div>
+        <label>Punti Casa</label>
+        <input type="number" id="addHomeRuns" min="0" placeholder="0" style="margin: 0;">
+      </div>
+      <div>
+        <label>Squadra Ospite</label>
+        <select id="addAway" style="margin: 0;"></select>
+      </div>
+      <div>
+        <label>Punti Ospite</label>
+        <input type="number" id="addAwayRuns" min="0" placeholder="0" style="margin: 0;">
+      </div>
+      <button onclick="addGameBtn()" style="margin-top: 0;">➕ Aggiungi Partita</button>
+    </div>
+
+    <h3 style="margin-top: 2rem;">✏️ Modifica o Elimina Partita</h3>
+    <div>
+      <label>Seleziona Partita</label>
+      <select id="gameList" style="margin: 0 0 1rem 0;"></select>
+      
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; align-items: flex-end;">
+        <div>
+          <label>Data</label>
+          <input type="date" id="editDate" style="margin: 0;">
+        </div>
+        <div>
+          <label>Squadra Casa</label>
+          <select id="editHome" style="margin: 0;"></select>
+        </div>
+        <div>
+          <label>Punti Casa</label>
+          <input type="number" id="editHomeRuns" min="0" style="margin: 0;">
+        </div>
+        <div>
+          <label>Squadra Ospite</label>
+          <select id="editAway" style="margin: 0;"></select>
+        </div>
+        <div>
+          <label>Punti Ospite</label>
+          <input type="number" id="editAwayRuns" min="0" style="margin: 0;">
+        </div>
+        <div>
+          <button onclick="updateGameBtn()" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); margin-top: 0;">✓ Modifica</button>
+          <button onclick="deleteGameBtn()" style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); margin-top: 0; margin-left: 0.5rem;">✕ Elimina</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== STATISTICHE GIOCATORE ====================  -->
+  <div class="section">
+    <h2>📊 Statistiche Giocatore</h2>
+
+    <div style="margin-bottom: 1.5rem;">
+      <label>Seleziona Giocatore</label>
+      <select id="sel" style="display: block; margin: 0.5rem 0;"></select>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
+      <!-- BATTING -->
+      <div>
+        <h3 style="margin-top: 0;">🏏 Batting (Battuta)</h3>
+        <div class="input-group">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+            <div>
+              <label class="input-label">AB <span class="tooltip">At Bats - Turni al Battimento</span></label>
+              <input id="b_AB" type="number" placeholder="AB" style="max-width: 100%;">
+            </div>
+            <div>
+              <label class="input-label">H <span class="tooltip">Hits - Colpi Validi</span></label>
+              <input id="b_H" type="number" placeholder="H" style="max-width: 100%;">
+            </div>
+            <div>
+              <label class="input-label">2B <span class="tooltip">Double - Doppi</span></label>
+              <input id="b_2B" type="number" placeholder="2B" style="max-width: 100%;">
+            </div>
+            <div>
+              <label class="input-label">3B <span class="tooltip">Triple - Tripli</span></label>
+              <input id="b_3B" type="number" placeholder="3B" style="max-width: 100%;">
+            </div>
+            <div>
+              <label class="input-label">HR <span class="tooltip">Home Runs - Fuori Campo</span></label>
+              <input id="b_HR" type="number" placeholder="HR" style="max-width: 100%;">
+            </div>
+            <div>
+              <label class="input-label">RBI <span class="tooltip">Runs Batted In - Punti Battuti</span></label>
+              <input id="b_RBI" type="number" placeholder="RBI" style="max-width: 100%;">
+            </div>
+            <div>
+              <label class="input-label">R <span class="tooltip">Runs - Punti Segnati</span></label>
+              <input id="b_R" type="number" placeholder="R" style="max-width: 100%;">
+            </div>
+            <div>
+              <label class="input-label">BB <span class="tooltip">Base on Balls - Basi su Errore</span></label>
+              <input id="b_BB" type="number" placeholder="BB" style="max-width: 100%;">
+            </div>
+            <div>
+              <label class="input-label">SO <span class="tooltip">Strikeout - Eliminazioni</span></label>
+              <input id="b_SO" type="number" placeholder="SO" style="max-width: 100%;">
+            </div>
+            <div>
+              <label class="input-label">SB <span class="tooltip">Stolen Bases - Basi Rubate</span></label>
+              <input id="b_SB" type="number" placeholder="SB" style="max-width: 100%;">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PITCHING -->
+      <div>
+        <h3 style="margin-top: 0;">⚾ Pitching (Lancio)</h3>
+        <div class="input-group">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+            <div>
+              <label class="input-label">IP <span class="tooltip">Innings Pitched - Inning Lanciati</span></label>
+              <input id="p_IP" type="number" step="0.1" placeholder="IP" style="max-width: 100%;">
+            </div>
+            <div>
+              <label class="input-label">H <span class="tooltip">Hits - Colpi Validi</span></label>
+              <input id="p_H" type="number" placeholder="H" style="max-width: 100%;">
+            </div>
+            <div>
+              <label class="input-label">R <span class="tooltip">Runs - Punti Segnati</span></label>
+              <input id="p_R" type="number" placeholder="R" style="max-width: 100%;">
+            </div>
+            <div>
+              <label class="input-label">ER <span class="tooltip">Earned Runs - Punti Meritati</span></label>
+              <input id="p_ER" type="number" placeholder="ER" style="max-width: 100%;">
+            </div>
+            <div>
+              <label class="input-label">BB <span class="tooltip">Base on Balls - Basi su Errore</span></label>
+              <input id="p_BB" type="number" placeholder="BB" style="max-width: 100%;">
+            </div>
+            <div>
+              <label class="input-label">SO <span class="tooltip">Strikeout - Eliminazioni</span></label>
+              <input id="p_SO" type="number" placeholder="SO" style="max-width: 100%;">
+            </div>
+            <div>
+              <label class="input-label">W <span class="tooltip">Wins - Vittorie</span></label>
+              <input id="p_W" type="number" placeholder="W" style="max-width: 100%;">
+            </div>
+            <div>
+              <label class="input-label">L <span class="tooltip">Losses - Sconfitte</span></label>
+              <input id="p_L" type="number" placeholder="L" style="max-width: 100%;">
+            </div>
+            <div>
+              <label class="input-label">SV <span class="tooltip">Saves - Salvataggi</span></label>
+              <input id="p_SV" type="number" placeholder="SV" style="max-width: 100%;">
+            </div>
+            <div>
+              <label class="input-label">Strikes</label>
+              <input id="p_Strikes" type="number" placeholder="Strike" style="max-width: 100%;">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- FIELDING -->
+      <div>
+        <h3 style="margin-top: 0;">🧤 Fielding (Difesa)</h3>
+        <div class="input-group">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+            <div>
+              <label class="input-label">TC <span class="tooltip">Total Chances - Giocate Totali</span></label>
+              <input id="f_TC" type="number" placeholder="TC" style="max-width: 100%;">
+            </div>
+            <div>
+              <label class="input-label">PO <span class="tooltip">Putouts - Eliminazioni</span></label>
+              <input id="f_PO" type="number" placeholder="PO" style="max-width: 100%;">
+            </div>
+            <div>
+              <label class="input-label">A <span class="tooltip">Assists - Assist</span></label>
+              <input id="f_A" type="number" placeholder="A" style="max-width: 100%;">
+            </div>
+            <div>
+              <label class="input-label">E <span class="tooltip">Errors - Errori</span></label>
+              <input id="f_E" type="number" placeholder="E" style="max-width: 100%;">
+            </div>
+            <div>
+              <label class="input-label">DP <span class="tooltip">Double Plays - Doppi Giochi</span></label>
+              <input id="f_DP" type="number" placeholder="DP" style="max-width: 100%;">
+            </div>
+            <div>
+              <label class="input-label">PB <span class="tooltip">Passed Balls - Palloni Passati</span></label>
+              <input id="f_PB" type="number" placeholder="PB" style="max-width: 100%;">
+            </div>
+            <div>
+              <label class="input-label">SBA <span class="tooltip">Stolen Base Attempts</span></label>
+              <input id="f_SBA" type="number" placeholder="SBA" style="max-width: 100%;">
+            </div>
+            <div>
+              <label class="input-label">CS <span class="tooltip">Caught Stealing</span></label>
+              <input id="f_CS" type="number" placeholder="CS" style="max-width: 100%;">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top: 1.5rem; text-align: center;">
+      <button onclick="loadStatsIntoForm()" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); margin-right: 1rem;">🔄 Carica Statistiche</button>
+      <button onclick="saveStatsBtn()" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">💾 Salva Statistiche</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Mostra il PIN attuale
+  function displayCurrentPin() {
+    const currentPin = localStorage.getItem("adminPin") || "1234";
+    document.getElementById("currentPin").textContent = "*".repeat(currentPin.length);
+  }
+
+  // Cambia il PIN
+  function changePinBtn() {
+    const newPin = document.getElementById("newPin").value;
+    const confirmPin = document.getElementById("confirmPin").value;
+
+    if (!newPin || !confirmPin) {
+      return alert("Inserisci il nuovo PIN in entrambi i campi");
+    }
+
+    if (newPin.length < 4) {
+      return alert("Il PIN deve avere almeno 4 caratteri");
+    }
+
+    if (newPin !== confirmPin) {
+      return alert("I PIN non coincidono");
+    }
+
+    localStorage.setItem("adminPin", newPin);
+    alert("PIN cambiato con successo! Usa il nuovo PIN al prossimo login.");
+    
+    // Resetta i campi
+    document.getElementById("newPin").value = "";
+    document.getElementById("confirmPin").value = "";
+    
+    // Aggiorna la visualizzazione
+    displayCurrentPin();
+  }
+
+  // ==================== GESTIONE GIOCATORI ====================
+  const TEAMS = ["Bulldogs", "Happy Friends", "Randazzese", "UNIME"];
+  let allPlayers = [];
+  let allTeams = localStorage.getItem("teams") ? JSON.parse(localStorage.getItem("teams")) : [...TEAMS];
+  let allGames = [];
+
+  // Carica lista giocatori per modifica/eliminazione
+  function loadPlayerListForEdit() {
+    const playerList = document.getElementById("playerList");
+    playerList.innerHTML = '<option value="">-- Seleziona un giocatore --</option>';
+
+    allPlayers = getPlayers();
+
+    allPlayers.forEach(p => {
+      const option = document.createElement("option");
+      option.value = p.id;
+      option.textContent = `${p.name} (${p.team})`;
+      playerList.appendChild(option);
+    });
+  }
+
+  // Quando si seleziona un giocatore, carica i suoi dati
+  document.getElementById("playerList").addEventListener("change", function() {
+    if (!this.value) {
+      document.getElementById("editPlayerName").value = "";
+      document.getElementById("editTeam").value = "";
+      return;
+    }
+
+    const player = allPlayers.find(p => p.id == this.value);
+    if (player) {
+      document.getElementById("editPlayerName").value = player.name;
+      document.getElementById("editTeam").value = player.team;
+    }
+  });
+
+  // Modifica giocatore
+  function updatePlayerBtn() {
+    const playerId = document.getElementById("playerList").value;
+    const newName = document.getElementById("editPlayerName").value;
+    const newTeam = document.getElementById("editTeam").value;
+
+    if (!playerId) return alert("Seleziona un giocatore");
+    if (!newName) return alert("Inserisci un nome");
+
+    const player = allPlayers.find(p => p.id == playerId);
+    player.name = newName;
+    player.team = newTeam;
+
+    addPlayerToDB(player);
+    alert("Giocatore modificato con successo!");
+    document.getElementById("playerList").value = "";
+    document.getElementById("editPlayerName").value = "";
+    loadPlayerListForEdit();
+    loadPlayers();
+  }
+
+  // Elimina giocatore
+  function deletePlayerBtn() {
+    const playerId = document.getElementById("playerList").value;
+
+    if (!playerId) return alert("Seleziona un giocatore");
+
+    if (!confirm("Sei sicuro di voler eliminare questo giocatore?")) {
+      return;
+    }
+
+    // Elimina dal localStorage
+    let players = getPlayers();
+    players = players.filter(p => p.id != playerId);
+    localStorage.setItem("players", JSON.stringify(players));
+    
+    // Elimina le statistiche
+    localStorage.removeItem("stats_" + String(playerId));
+    localStorage.removeItem("history_" + String(playerId));
+
+    alert("Giocatore eliminato!");
+    document.getElementById("playerList").value = "";
+    document.getElementById("editPlayerName").value = "";
+    loadPlayerListForEdit();
+    loadPlayers();
+  }
+
+  // ==================== GESTIONE SQUADRE ====================
+  
+  // Aggiorna tutti i selettori di squadra nella pagina
+  function updateAllTeamSelects() {
+    const teamSelects = document.querySelectorAll("select[id='team'], select[id='editTeam'], select[id='addHome'], select[id='addAway'], select[id='editHome'], select[id='editAway']");
+    teamSelects.forEach(select => {
+      const currentValue = select.value;
+      select.innerHTML = "";
+      allTeams.forEach(team => {
+        const option = document.createElement("option");
+        option.value = team;
+        option.textContent = team;
+        select.appendChild(option);
+      });
+      if (allTeams.includes(currentValue)) {
+        select.value = currentValue;
+      }
+    });
+  }
+  
+  // Carica lista squadre
+  function loadTeamList() {
+    const teamList = document.getElementById("teamList");
+    teamList.innerHTML = '<option value="">-- Seleziona una squadra --</option>';
+
+    allTeams.forEach((team, index) => {
+      const option = document.createElement("option");
+      option.value = index;
+      option.textContent = team;
+      teamList.appendChild(option);
+    });
+  }
+
+  // Quando si seleziona una squadra
+  document.getElementById("teamList").addEventListener("change", function() {
+    if (!this.value && this.value !== "0") {
+      document.getElementById("editTeamName").value = "";
+      return;
+    }
+
+    document.getElementById("editTeamName").value = allTeams[this.value];
+  });
+
+  // Modifica squadra
+  function updateTeamBtn() {
+    const teamIndex = document.getElementById("teamList").value;
+    const newName = document.getElementById("editTeamName").value;
+
+    if (!newName && teamIndex !== "0") return alert("Inserisci il nome della squadra");
+    if (teamIndex === "") return alert("Seleziona una squadra");
+
+    const oldName = allTeams[teamIndex];
+    allTeams[teamIndex] = newName;
+    localStorage.setItem("teams", JSON.stringify(allTeams));
+
+    alert("Squadra modificata!");
+    document.getElementById("teamList").value = "";
+    document.getElementById("editTeamName").value = "";
+    loadTeamList();
+    updateAllTeamSelects();
+  }
+
+  // Elimina squadra
+  function deleteTeamBtn() {
+    const teamIndex = document.getElementById("teamList").value;
+
+    if (teamIndex === "") return alert("Seleziona una squadra");
+
+    if (!confirm("Sei sicuro di voler eliminare questa squadra?")) {
+      return;
+    }
+
+    allTeams.splice(teamIndex, 1);
+    localStorage.setItem("teams", JSON.stringify(allTeams));
+
+    alert("Squadra eliminata!");
+    document.getElementById("teamList").value = "";
+    document.getElementById("editTeamName").value = "";
+    loadTeamList();
+    updateAllTeamSelects();
+  }
+
+  // ==================== GESTIONE PARTITE ====================
+
+  // Carica lista partite
+  function loadGameList() {
+    const gameList = document.getElementById("gameList");
+    gameList.innerHTML = '<option value="">-- Seleziona una partita --</option>';
+
+    allGames = getGames();
+
+    // ordina per data (più recente prima)
+    allGames.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+    allGames.forEach(g => {
+      const option = document.createElement("option");
+      option.value = g.id;
+      const dateStr = new Date(g.date).toLocaleDateString('it-IT');
+      option.textContent = `${dateStr}: ${g.home} ${g.homeScore || g.homeRuns || 0} - ${g.away} ${g.awayScore || g.awayRuns || 0}`;
+      gameList.appendChild(option);
+    });
+  }
+
+  // Quando si seleziona una partita
+  document.getElementById("gameList").addEventListener("change", function() {
+    if (!this.value) {
+      document.getElementById("editDate").value = "";
+      document.getElementById("editHome").value = "";
+      document.getElementById("editHomeRuns").value = "";
+      document.getElementById("editAway").value = "";
+      document.getElementById("editAwayRuns").value = "";
+      return;
+    }
+
+    const game = allGames.find(g => g.id == this.value);
+    if (game) {
+      document.getElementById("editDate").value = game.date;
+      document.getElementById("editHome").value = game.home;
+      document.getElementById("editHomeRuns").value = game.homeRuns;
+      document.getElementById("editAway").value = game.away;
+      document.getElementById("editAwayRuns").value = game.awayRuns;
+    }
+  });
+
+  // Modifica partita
+  function updateGameBtn() {
+    const gameId = document.getElementById("gameList").value;
+    const date = document.getElementById("editDate").value;
+    const home = document.getElementById("editHome").value;
+    const away = document.getElementById("editAway").value;
+    const homeRuns = +document.getElementById("editHomeRuns").value;
+    const awayRuns = +document.getElementById("editAwayRuns").value;
+
+    if (!gameId) return alert("Seleziona una partita");
+    if (!date) return alert("Inserisci la data");
+    if (home === away) return alert("Le squadre devono essere diverse");
+
+    let winner, loser;
+
+    if (homeRuns > awayRuns) {
+      winner = home;
+      loser = away;
+    } else if (awayRuns > homeRuns) {
+      winner = away;
+      loser = home;
+    } else {
+      return alert("Non sono ammessi pareggi");
+    }
+
+    const updatedGame = {
+      date,
+      home,
+      away,
+      homeRuns,
+      awayRuns,
+      homeScore: homeRuns,
+      awayScore: awayRuns,
+      winner,
+      loser
+    };
+
+    updateMatch(gameId, updatedGame);
+
+    alert("Partita modificata!");
+    document.getElementById("gameList").value = "";
+    document.getElementById("editDate").value = "";
+    document.getElementById("editHome").value = "";
+    document.getElementById("editHomeRuns").value = "";
+    document.getElementById("editAway").value = "";
+    document.getElementById("editAwayRuns").value = "";
+    loadGameList();
+  }
+
+  // Elimina partita
+  function deleteGameBtn() {
+    const gameId = document.getElementById("gameList").value;
+
+    if (!gameId) return alert("Seleziona una partita");
+
+    if (!confirm("Sei sicuro di voler eliminare questa partita?")) {
+      return;
+    }
+
+    removeMatch(gameId);
+
+    alert("Partita eliminata!");
+    document.getElementById("gameList").value = "";
+    document.getElementById("editDate").value = "";
+    document.getElementById("editHome").value = "";
+    document.getElementById("editHomeRuns").value = "";
+    document.getElementById("editAway").value = "";
+    document.getElementById("editAwayRuns").value = "";
+    loadGameList();
+  }
+
+  function loadPlayers() {
+    const sel = document.getElementById("sel");
+    sel.innerHTML = "";
+
+    const players = getPlayers();
+
+    players.forEach(p => {
+      sel.innerHTML += `<option value="${p.id}">${p.name} (${p.team})</option>`;
+    });
+
+    if (players.length > 0) loadStatsIntoForm();
+  }
+
+  function addPlayer() {
+    const name = document.getElementById("name").value;
+    const team = document.getElementById("team").value;
+
+    if (!name) return alert("Inserisci un nome");
+
+    const player = { id: Date.now(), name, team };
+    addPlayerToDB(player);
+
+    document.getElementById("name").value = "";
+    loadPlayers();
+    alert("Giocatore aggiunto!");
+  }
+
+  function addGameBtn() {
+    const date = document.getElementById("addDate").value;
+    const home = document.getElementById("addHome").value;
+    const away = document.getElementById("addAway").value;
+    const homeRuns = +document.getElementById("addHomeRuns").value;
+    const awayRuns = +document.getElementById("addAwayRuns").value;
+
+    if (!date) return alert("Inserisci la data");
+    if (home === away) return alert("Le squadre devono essere diverse");
+
+    let winner, loser;
+
+    if (homeRuns > awayRuns) {
+      winner = home;
+      loser = away;
+    } else if (awayRuns > homeRuns) {
+      winner = away;
+      loser = home;
+    } else {
+      return alert("Non sono ammessi pareggi");
+    }
+
+    const game = {
+      id: Date.now(),
+      date,
+      home,
+      away,
+      homeRuns,
+      awayRuns,
+      homeScore: homeRuns,
+      awayScore: awayRuns,
+      winner,
+      loser
+    };
+
+    const matches = getMatches();
+    matches.push(game);
+    saveMatches(matches);
+
+    alert("Partita aggiunta!");
+
+    // reset campi
+    document.getElementById("addDate").value = "";
+    document.getElementById("addHomeRuns").value = "";
+    document.getElementById("addAwayRuns").value = "";
+    loadGameList();
+  }
+
+  document.getElementById("sel").addEventListener("change", loadStatsIntoForm);
+
+  function loadStatsIntoForm() {
+    const id = document.getElementById("sel").value;
+    const stats = getStats(id);
+
+    const fill = (prefix, obj) => {
+      Object.keys(obj).forEach(k => {
+        const el = document.getElementById(prefix + k);
+        if (el) el.value = obj[k];
+      });
+    };
+
+    fill("b_", stats.batting);
+    fill("p_", stats.pitching);
+    fill("f_", stats.fielding);
+  }
+
+  function saveStatsBtn() {
+    const id = document.getElementById("sel").value;
+    if (!id) return alert("Seleziona un giocatore");
+    
+    let stats = getStats(id);
+
+    const fill = (prefix, obj) => {
+      Object.keys(obj).forEach(k => {
+        const el = document.getElementById(prefix + k);
+        if (el) obj[k] = +el.value || 0;
+      });
+    };
+
+    fill("b_", stats.batting);
+    fill("p_", stats.pitching);
+    fill("f_", stats.fielding);
+
+    stats = updateComputedStats(stats);
+
+    saveStats(id, stats);
+    savePlayerSnapshot(id, stats);
+    
+    alert("Statistiche salvate!");
+  }
+
+  // Funzione per salvare lo snapshot della cronologia
+  function savePlayerSnapshot(playerId, stats) {
+    const historyKey = "history_" + String(playerId);
+    let history = [];
+    
+    try {
+      const saved = localStorage.getItem(historyKey);
+      if (saved) {
+        history = JSON.parse(saved);
+      }
+    } catch (e) {
+      console.error("Errore nel caricamento cronologia:", e);
+    }
+    
+    const snapshot = {
+      date: new Date().toLocaleDateString('it-IT'),
+      timestamp: new Date().getTime(),
+      batting: { ...stats.batting },
+      pitching: { ...stats.pitching },
+      fielding: { ...stats.fielding }
+    };
+    
+    history.push(snapshot);
+    localStorage.setItem(historyKey, JSON.stringify(history));
+  }
+
+  // INIZIALIZZAZIONE
+  loadPlayers();
+  loadPlayerListForEdit();
+  loadTeamList();
+  updateAllTeamSelects();
+  loadGameList();
+  displayCurrentPin();
+</script>
+
+</body>
+</html>
 
 <hr>
 
@@ -428,11 +1126,11 @@
   let allGames = [];
 
   // Carica lista giocatori per modifica/eliminazione
-  async function loadPlayerListForEdit() {
+  function loadPlayerListForEdit() {
     const playerList = document.getElementById("playerList");
     playerList.innerHTML = '<option value="">-- Seleziona un giocatore --</option>';
 
-    allPlayers = await getPlayers();
+    allPlayers = getPlayers();
 
     allPlayers.forEach(p => {
       const option = document.createElement("option");
@@ -458,7 +1156,7 @@
   });
 
   // Modifica giocatore
-  async function updatePlayerBtn() {
+  function updatePlayerBtn() {
     const playerId = document.getElementById("playerList").value;
     const newName = document.getElementById("editPlayerName").value;
     const newTeam = document.getElementById("editTeam").value;
@@ -470,7 +1168,7 @@
     player.name = newName;
     player.team = newTeam;
 
-    await addPlayerToDB(player);
+    addPlayerToDB(player);
     alert("Giocatore modificato con successo!");
     document.getElementById("playerList").value = "";
     document.getElementById("editPlayerName").value = "";
@@ -479,7 +1177,7 @@
   }
 
   // Elimina giocatore
-  async function deletePlayerBtn() {
+  function deletePlayerBtn() {
     const playerId = document.getElementById("playerList").value;
 
     if (!playerId) return alert("Seleziona un giocatore");
@@ -488,9 +1186,14 @@
       return;
     }
 
-    // Elimina dal database
-    await db.collection("players").doc(String(playerId)).delete();
-    await db.collection("stats").doc(String(playerId)).delete();
+    // Elimina dal localStorage
+    let players = getPlayers();
+    players = players.filter(p => p.id != playerId);
+    localStorage.setItem("players", JSON.stringify(players));
+    
+    // Elimina le statistiche
+    localStorage.removeItem("stats_" + String(playerId));
+    localStorage.removeItem("history_" + String(playerId));
 
     alert("Giocatore eliminato!");
     document.getElementById("playerList").value = "";
@@ -584,12 +1287,11 @@
   // ==================== GESTIONE PARTITE ====================
 
   // Carica lista partite
-  async function loadGameList() {
+  function loadGameList() {
     const gameList = document.getElementById("gameList");
     gameList.innerHTML = '<option value="">-- Seleziona una partita --</option>';
 
-    const snap = await db.collection("games").get();
-    allGames = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    allGames = getGames();
 
     // ordina per data (più recente prima)
     allGames.sort((a, b) => new Date(b.date) - new Date(a.date));
@@ -597,7 +1299,8 @@
     allGames.forEach(g => {
       const option = document.createElement("option");
       option.value = g.id;
-      option.textContent = `${g.date}: ${g.home} ${g.homeRuns} - ${g.away} ${g.awayRuns}`;
+      const dateStr = new Date(g.date).toLocaleDateString('it-IT');
+      option.textContent = `${dateStr}: ${g.home} ${g.homeScore || g.homeRuns || 0} - ${g.away} ${g.awayScore || g.awayRuns || 0}`;
       gameList.appendChild(option);
     });
   }
@@ -624,7 +1327,7 @@
   });
 
   // Modifica partita
-  async function updateGameBtn() {
+  function updateGameBtn() {
     const gameId = document.getElementById("gameList").value;
     const date = document.getElementById("editDate").value;
     const home = document.getElementById("editHome").value;
@@ -654,11 +1357,13 @@
       away,
       homeRuns,
       awayRuns,
+      homeScore: homeRuns,
+      awayScore: awayRuns,
       winner,
       loser
     };
 
-    await db.collection("games").doc(gameId).update(updatedGame);
+    updateMatch(gameId, updatedGame);
 
     alert("Partita modificata con successo!");
     document.getElementById("gameList").value = "";
@@ -671,7 +1376,7 @@
   }
 
   // Elimina partita
-  async function deleteGameBtn() {
+  function deleteGameBtn() {
     const gameId = document.getElementById("gameList").value;
 
     if (!gameId) return alert("Seleziona una partita");
@@ -680,7 +1385,7 @@
       return;
     }
 
-    await db.collection("games").doc(gameId).delete();
+    removeMatch(gameId);
 
     alert("Partita eliminata!");
     document.getElementById("gameList").value = "";
@@ -692,11 +1397,11 @@
     loadGameList();
   }
 
-  async function loadPlayers() {
+  function loadPlayers() {
     const sel = document.getElementById("sel");
     sel.innerHTML = "";
 
-    const players = await getPlayers();
+    const players = getPlayers();
 
     players.forEach(p => {
       sel.innerHTML += `<option value="${p.id}">${p.name} (${p.team})</option>`;
@@ -705,14 +1410,14 @@
     if (players.length > 0) loadStatsIntoForm();
   }
 
-  async function addPlayer() {
+  function addPlayer() {
     const name = document.getElementById("name").value;
     const team = document.getElementById("team").value;
 
     if (!name) return alert("Inserisci un nome");
 
     const player = { id: Date.now(), name, team };
-    await addPlayerToDB(player);
+    addPlayerToDB(player);
 
     document.getElementById("name").value = "";
     loadPlayers();
@@ -741,16 +1446,21 @@
     }
 
     const game = {
+      id: Date.now(),
       date,
       home,
       away,
       homeRuns,
       awayRuns,
+      homeScore: homeRuns,
+      awayScore: awayRuns,
       winner,
       loser
     };
 
-    await db.collection("games").add(game);
+    const matches = getMatches();
+    matches.push(game);
+    saveMatches(matches);
 
     alert("Partita aggiunta correttamente!");
 
@@ -763,9 +1473,9 @@
 
   document.getElementById("sel").addEventListener("change", loadStatsIntoForm);
 
-  async function loadStatsIntoForm() {
+  function loadStatsIntoForm() {
     const id = document.getElementById("sel").value;
-    const stats = await getStats(id);
+    const stats = getStats(id);
 
     const fill = (prefix, obj) => {
       Object.keys(obj).forEach(k => {
@@ -779,9 +1489,9 @@
     fill("f_", stats.fielding);
   }
 
-  async function saveStatsBtn() {
+  function saveStatsBtn() {
     const id = document.getElementById("sel").value;
-    let stats = await getStats(id);
+    let stats = getStats(id);
 
     const fill = (prefix, obj) => {
       Object.keys(obj).forEach(k => {
@@ -796,18 +1506,27 @@
 
     stats = updateComputedStats(stats);
 
-    await saveStats(id, stats);
+    saveStats(id, stats);
     
     // Salva uno snapshot della cronologia per i grafici
-    await savePlayerSnapshot(id, stats);
+    savePlayerSnapshot(id, stats);
     
     alert("Statistiche salvate");
   }
 
   // Funzione per salvare lo snapshot della cronologia
-  async function savePlayerSnapshot(playerId, stats) {
-    const doc = await db.collection("playerHistory").doc(String(playerId)).get();
-    let history = doc.exists ? doc.data().history || [] : [];
+  function savePlayerSnapshot(playerId, stats) {
+    const historyKey = "history_" + String(playerId);
+    let history = [];
+    
+    try {
+      const saved = localStorage.getItem(historyKey);
+      if (saved) {
+        history = JSON.parse(saved);
+      }
+    } catch (e) {
+      console.error("Errore nel caricamento cronologia:", e);
+    }
     
     const snapshot = {
       date: new Date().toLocaleDateString('it-IT'),
@@ -818,7 +1537,7 @@
     };
     
     history.push(snapshot);
-    await db.collection("playerHistory").doc(String(playerId)).set({ history });
+    localStorage.setItem(historyKey, JSON.stringify(history));
   }
 
   loadPlayers();

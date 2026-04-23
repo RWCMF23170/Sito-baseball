@@ -6,11 +6,6 @@
 
   <link rel="stylesheet" href="style.css">
 
-  <!-- Firebase -->
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
-  <script src="firebase.js"></script>
-
   <!-- Chart.js per i grafici -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
@@ -129,8 +124,8 @@
 
 <script>
   // Carica la lista dei giocatori
-  async function loadPlayers() {
-    const players = await getPlayers();
+  function loadPlayers() {
+    const players = getPlayers();
     const select = document.getElementById("playerSelect");
     select.innerHTML = '<option value="">-- Seleziona un giocatore --</option>';
     
@@ -143,29 +138,7 @@
   }
 
   // Carica la cronologia delle statistiche
-  async function getPlayerHistory(playerId) {
-    const doc = await db.collection("playerHistory").doc(String(playerId)).get();
-    if (!doc.exists) return [];
-    return doc.data().history || [];
-  }
-
-  // Salva uno snapshot delle statistiche attuali
-  async function savePlayerSnapshot(playerId, stats) {
-    const history = await getPlayerHistory(playerId);
-    const snapshot = {
-      date: new Date().toLocaleDateString('it-IT'),
-      timestamp: new Date().getTime(),
-      batting: { ...stats.batting },
-      pitching: { ...stats.pitching },
-      fielding: { ...stats.fielding }
-    };
-    
-    history.push(snapshot);
-    await db.collection("playerHistory").doc(String(playerId)).set({ history });
-  }
-
-  // Carica e visualizza le analisi
-  async function loadPlayerAnalytics() {
+  function loadPlayerAnalytics() {
     const select = document.getElementById("playerSelect");
     let playerId = select.value;
     
@@ -183,17 +156,26 @@
       return;
     }
 
-    const players = await getPlayers();
+    const players = getPlayers();
     const player = players.find(p => p.id == playerId);
     
     if (!player) return;
 
-    const stats = await getStats(playerId);
-    const history = await getPlayerHistory(playerId);
+    const stats = getStats(playerId);
+    const history = getPlayerHistory(playerId);
 
     // Se non ci sono dati storici, salva lo snapshot attuale
     if (history.length === 0) {
-      await savePlayerSnapshot(playerId, stats);
+      // Aggiungi uno snapshot iniziale
+      const snapshot = {
+        date: new Date().toLocaleDateString('it-IT'),
+        timestamp: new Date().getTime(),
+        batting: { ...stats.batting },
+        pitching: { ...stats.pitching },
+        fielding: { ...stats.fielding }
+      };
+      const newHistory = [snapshot];
+      localStorage.setItem("history_" + String(playerId), JSON.stringify(newHistory));
       alert("Primo salvataggio effettuato. Aggiungi altre statistiche per visualizzare l'andamento.");
       return;
     }
